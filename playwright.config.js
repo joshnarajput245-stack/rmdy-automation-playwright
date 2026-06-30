@@ -21,6 +21,7 @@ export default defineConfig({
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
     headless: false,
+    viewport: { width: 1280, height: 900 },
   },
   projects: [
     {

@@ -3,6 +3,7 @@ import BasePage from '../BasePage.js';
 import { uploadFileInput, TEST_AVATAR_PATH } from '../../utils/fileUploadHelper.js';
 import { fillDatePicker, selectByLabel, selectFirstMultiSelectOption } from '../../utils/muiHelpers.js';
 import { verifyOtpAndWait } from '../../utils/otpHelper.js';
+import { scrollIntoCenter } from '../../utils/scrollHelper.js';
 import { testConfig } from '../../utils/testConfig.js';
 
 export default class ProviderPersonalDetailsPage extends BasePage {
@@ -34,6 +35,8 @@ export default class ProviderPersonalDetailsPage extends BasePage {
 
   async selectSpeciality() {
     await selectFirstMultiSelectOption(this.page, 'Speciality');
+    const emailField = this.page.getByPlaceholder('Enter Email Address');
+    await scrollIntoCenter(emailField);
   }
 
   getContactRow(placeholder) {
@@ -47,7 +50,7 @@ export default class ProviderPersonalDetailsPage extends BasePage {
 
   async assertEmailVerified() {
     const emailField = this.page.getByPlaceholder('Enter Email Address');
-    await emailField.scrollIntoViewIfNeeded();
+    await scrollIntoCenter(emailField);
     await expect(emailField).toBeVisible();
 
     const emailContainer = this.getContactRow('Enter Email Address');
@@ -56,7 +59,7 @@ export default class ProviderPersonalDetailsPage extends BasePage {
 
   async assertMobileVerified() {
     const mobileField = this.page.getByPlaceholder('Enter Mobile Number');
-    await mobileField.scrollIntoViewIfNeeded();
+    await scrollIntoCenter(mobileField);
     await expect(mobileField).toBeVisible();
 
     const mobileContainer = this.getContactRow('Enter Mobile Number');
@@ -65,7 +68,7 @@ export default class ProviderPersonalDetailsPage extends BasePage {
 
   async verifyMobileIfNeeded(mobile, otp) {
     const mobileField = this.page.getByPlaceholder('Enter Mobile Number');
-    await mobileField.scrollIntoViewIfNeeded();
+    await scrollIntoCenter(mobileField);
     await expect(mobileField).toBeVisible({ timeout: 30000 });
 
     const mobileContainer = this.getContactRow('Enter Mobile Number');
@@ -76,7 +79,9 @@ export default class ProviderPersonalDetailsPage extends BasePage {
     }
 
     await mobileField.fill(mobile);
-    await mobileContainer.getByRole('button', { name: 'Verify' }).click();
+    const verifyButton = mobileContainer.getByRole('button', { name: 'Verify' });
+    await scrollIntoCenter(verifyButton);
+    await verifyButton.click();
     await this.page.waitForURL(/\/otp-verification/, { timeout: 30000 });
     await verifyOtpAndWait(this.page, otp, /\/personal-details/);
     await this.waitForPage();
@@ -85,17 +90,20 @@ export default class ProviderPersonalDetailsPage extends BasePage {
 
   async fillPasswordIfRequired() {
     const createPassword = this.page.getByLabel('Create Password');
+    await scrollIntoCenter(createPassword).catch(() => {});
     if (!(await createPassword.isVisible().catch(() => false))) {
       return;
     }
 
     await createPassword.fill(this.password);
-    await this.page.getByRole('textbox', { name: 'Confirm Password' }).fill(this.password);
+    const confirmPassword = this.page.getByRole('textbox', { name: 'Confirm Password' });
+    await scrollIntoCenter(confirmPassword);
+    await confirmPassword.fill(this.password);
   }
 
   async verifyEmailIfNeeded(email, otp) {
     const emailField = this.page.getByPlaceholder('Enter Email Address');
-    await emailField.scrollIntoViewIfNeeded();
+    await scrollIntoCenter(emailField);
     await expect(emailField).toBeVisible({ timeout: 30000 });
 
     const emailContainer = this.getContactRow('Enter Email Address');
@@ -106,7 +114,9 @@ export default class ProviderPersonalDetailsPage extends BasePage {
     }
 
     await emailField.fill(email);
-    await emailContainer.getByRole('button', { name: 'Verify' }).click();
+    const verifyButton = emailContainer.getByRole('button', { name: 'Verify' });
+    await scrollIntoCenter(verifyButton);
+    await verifyButton.click();
     await this.page.waitForURL(/\/otp-verification/, { timeout: 30000 });
     await verifyOtpAndWait(this.page, otp, /\/personal-details/);
     await this.waitForPage();
@@ -115,6 +125,7 @@ export default class ProviderPersonalDetailsPage extends BasePage {
   }
 
   async submit() {
+    await scrollIntoCenter(this.nextButton);
     await expect(this.nextButton).toBeEnabled({ timeout: 30000 });
 
     const navigationPromise = this.waitForNavigation(/\/provider-clinic-visit/, 120000);
